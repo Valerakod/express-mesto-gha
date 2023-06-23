@@ -1,0 +1,26 @@
+.elements {
+  max-width: 880px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 20px 17px;
+  margin: 0 auto;
+  justify-items: center;
+  background-color: #000000;
+  overflow: hidden;
+}
+
+@media screen and (max-width:1023px) and (min-width:768px) {
+  .elements {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 23px 17px;
+  }
+}
+
+@media (max-width: 767px) and (min-width: 320px) {
+  .elements {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 23px 17px;
+  }
+}

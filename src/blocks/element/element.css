@@ -1,0 +1,19 @@
+.element {
+  max-width: 282px;
+  height: 360px;
+  display: flex;
+  background-color: #FFFFFF;
+  border-radius: 10px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+  width: 282px;
+}
+
+@media (max-width: 767px) and (min-width: 320px) {
+  .element {
+    margin: 0 auto;
+  }
+}

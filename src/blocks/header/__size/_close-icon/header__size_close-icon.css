@@ -1,0 +1,12 @@
+.header__size_close-icon{
+    display: none;
+    position: absolute;
+}
+
+@media (max-width: 768px){
+    .header__size_close-icon  {
+        display: block;
+        right: 30px;
+        
+    }
+}

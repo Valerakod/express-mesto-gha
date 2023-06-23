@@ -1,0 +1,11 @@
+.header__size{
+    display: none;
+}
+
+@media (max-width: 768px){
+    .header__size  {
+        display: block;
+        margin-right: 0;
+        
+    }
+}

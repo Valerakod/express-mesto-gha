@@ -1,0 +1,24 @@
+.header__logo {
+  background-image: url("../../../images/logo.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  margin-bottom: 41px;
+  width: 142px;
+  height: 33px;
+  transition: 0.5s;
+  cursor: pointer;
+  color: #FFFFFF;
+  z-index: 1;
+}
+
+.header__logo:hover {
+  opacity: 0.2;
+}
+
+@media (max-width: 767px) and (min-width: 320px) {
+  .header__logo {
+    margin: 0 0 0 27px;
+    width: 103px;
+    height: 24px;
+  }
+}

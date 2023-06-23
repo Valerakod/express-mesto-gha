@@ -1,0 +1,8 @@
+.element__heart-count {
+    display: block;
+    margin: 3px 0 0 8px;
+    font-weight: normal;
+    font-size: 13px;
+    line-height: 16px;
+    color: black;
+}

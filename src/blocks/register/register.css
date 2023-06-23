@@ -1,0 +1,21 @@
+.register{
+    width: 880px;
+    margin: 0 auto;
+    padding-top: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+@media (max-width: 1024px){
+    .register{
+        max-width: calc(100% - (0px + 256 * ((100vw - 425px) / 599)));
+    }
+}
+
+@media (max-width: 425px){
+    .register{
+        max-width: 100%;
+        padding-top: 28px;
+    }
+} 

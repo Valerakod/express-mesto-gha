@@ -1,0 +1,23 @@
+.register__label {
+    width: 358px;
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto 30px
+}
+
+.register__label {
+    width: 358px;
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto 30px;
+}
+
+.register__label:nth-child(2) {
+    margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+    .register__label {
+        width: 238px;
+    }
+}

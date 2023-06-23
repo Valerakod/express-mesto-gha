@@ -1,0 +1,26 @@
+.profile__avatar {
+width: 120px;
+height: 120px;
+border-radius: 50%;
+margin-right: 30px;
+object-fit: cover;
+background-repeat: no-repeat;
+background-position: center;
+justify-self: center;
+transition: 1s;
+cursor: pointer;
+}
+
+.profile__avatar:hover {
+background-image: url(../../../images/avatar-edit.png);
+background-color: rgba(0, 0, 0, 0.8);
+transition: 1s;
+cursor: pointer;
+
+}
+
+@media (max-width: 768px) {
+.profile__avatar {
+    margin: auto;
+}
+}

@@ -1,0 +1,12 @@
+.register__container{
+    margin: 0 auto 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+@media (max-width: 425px){
+    .register__container{
+        margin: 0 auto 40px;
+    }
+}
