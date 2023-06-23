@@ -1,50 +1,52 @@
-const User = require("../models/user");
-const someErrorUser = {
-  "message": "Запрашиваемый пользователь не найден"
-};
+const User = require('../models/user');
 const getAllUsers = (req, res, next) => {
   User.find({})
-    .then((users) => res.send({ users }))
-    .catch(next);
+    .orFail()
+    .then((users) => {
+      if (users && users.length > 0) {
+        return res.send({ users });
+      }
+      return res.status(500).send('No users found');
+    })
+    .catch(() => res.status(500).send('No users found'));
 };
 
 const getUserById = (req, res, next) => {
-  User.findById(req.params.userId ? req.params.userId : req.user._id)
+  const id = req.params.userId ? req.params.userId : req.user._id;
+  User.findById(id)
+    .orFail()
     .then((user) => res.status(200).send({ user }))
-    .catch((err) => console.error('😠'))
-    .catch(next);
+    .catch(() => res.status(500).send(`User with id: ${id} was not found `));
 };
 
 const createNewUser = (req, res) => {
   const { name, about, avatar } = req.body;
 
   User.create({ name, about, avatar })
-    .then((user) => res.send(user))
-    .catch((err) => console.error(err));
+    .orFail()
+    .then((user) => res.status(200).send({ user }))
+    .catch(() =>
+      res.status(500).send('An error occurred when creating a new user')
+    );
 };
 
 const editUserInfo = (req, res, next) => {
   const { name, about } = req.body;
-
-  User.findByIdAndUpdate(
-    req.user._id,
-    { name, about }
-  )
-    .then((user) => res.send({ user }))
-    .catch((err) => console.error(err))
-    .catch(next);
+  const id = req.user._id;
+  User.findByIdAndUpdate(id, { name, about })
+    .orFail()
+    .then((user) => res.status(200).send({ user }))
+    .catch(() => res.status(500).send(`User with id: ${id} was not updated`));
 };
 
 const editAvatar = (req, res, next) => {
   const { avatar } = req.body;
-
-  User.findByIdAndUpdate(
-    req.user._id,
-    { avatar }
-  )
-  .then((user) => res.send({ user }))
-  .catch((err) => console.error(err))
-  .catch(next);
+  const id = req.user._id;
+  User.findByIdAndUpdate(id, { avatar })
+    .orFail()
+    .then((user) => res.status(200).send({ user }))
+    .catch(() =>
+      res.status(500).send(`Avatar for user with id: ${id} was not updated`));
 };
 
 module.exports = {
@@ -52,5 +54,5 @@ module.exports = {
   getUserById,
   createNewUser,
   editUserInfo,
-  editAvatar
+  editAvatar,
 };
