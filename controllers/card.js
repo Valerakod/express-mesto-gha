@@ -11,8 +11,8 @@ const getCards = (req, res, next) => {
 const createCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
-  Card.create({ name, link, owner }).then((card) => res.status(201).send(card));
-  .catch((err) => if (err.name === someErrorCard) { return res.status(400)})
+  Card.create({ name, link, owner }).then((card) => res.status(201).send(card))
+  .catch(() => res.status(400))
   .catch(next);
 };
 
@@ -22,11 +22,9 @@ const deleteCard = (req, res, next) => {
       const owner = card.owner.toString();
       if (req.user._id === owner) {
         Card.deleteOne(card)
-          .then(() => {
-            res.send(card);
-          })
-
-    })
+          .then(() => res.send(card));
+      }
+    });
 };
 
 const likeCard = (req, res, next) => {
@@ -64,6 +62,3 @@ module.exports = {
   dislikeCard
 };
 
-module.exports.createCard = (req, res) => {
-  console.log(req.user._id); // _id станет доступен
-};

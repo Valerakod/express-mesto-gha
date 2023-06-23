@@ -10,8 +10,8 @@ const getAllUsers = (req, res, next) => {
 
 const getUserById = (req, res, next) => {
   User.findById(req.params.userId ? req.params.userId : req.user._id)
-    .then((user) => if (err.name === someErrorUser) { return res.status(400).send({ user })})
-    .catch((err) => console.error(err));
+    .then((user) => res.status(200).send({ user }))
+    .catch((err) => console.error('😠'))
     .catch(next);
 };
 
