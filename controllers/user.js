@@ -17,9 +17,16 @@ const getUserById = (req, res) => {
   User.findById(id)
     .orFail()
     .then((user) => res.status(200).send({ user }))
-    .catch(() =>
-      res.status(404).send({ message: `User with id: ${id} was not found ` })
-    );
+    .catch((error) => {
+      console.log(error.name);
+      if (error.name === 'CastError') {
+        return res.status(400).send({ message: 'oh no!' });
+      }
+
+      return res
+        .status(404)
+        .send({ message: `User with id: ${id} was not found ` });
+    });
 };
 
 const createNewUser = (req, res) => {
@@ -27,11 +34,9 @@ const createNewUser = (req, res) => {
 
   User.create({ name, about, avatar })
     .then((user) => res.status(200).send({ user }))
-    .catch(() =>
-      res
-        .status(400)
-        .send({ message: 'An error occurred when creating a new user' })
-    );
+    .catch(() => res
+      .status(400)
+      .send({ message: 'An error occurred when creating a new user' }));
 };
 
 const editUserInfo = (req, res) => {
@@ -40,26 +45,22 @@ const editUserInfo = (req, res) => {
   User.findByIdAndUpdate(
     id,
     { name, about },
-    { upsert: true, runValidators: true }
+    { new: true, runValidators: true },
   )
     .orFail()
     .then((user) => res.status(200).send({ user }))
-    .catch(() =>
-      res.status(400).send({ message: `User with id: ${id} was not updated` })
-    );
+    .catch(() => res.status(400).send({ message: `User with id: ${id} was not updated` }));
 };
 
 const editAvatar = (req, res) => {
   const { avatar } = req.body;
   const id = req.user._id;
-  User.findByIdAndUpdate(id, { avatar }, { upsert: true, runValidators: true })
+  User.findByIdAndUpdate(id, { avatar }, { new: true, runValidators: true })
     .orFail()
     .then((user) => res.status(200).send({ user }))
-    .catch(() =>
-      res
-        .status(400)
-        .send({ message: `Avatar for user with id: ${id} was not updated` })
-    );
+    .catch(() => res
+      .status(400)
+      .send({ message: `Avatar for user with id: ${id} was not updated` }));
 };
 
 module.exports = {
