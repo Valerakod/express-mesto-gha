@@ -47,7 +47,7 @@ const likeCard = (req, res) => {
     .then((card) => res.status(200).send({ card }))
     .catch((error) => {
       console.log(error.name);
-      if (error.name === 'CastError') {
+      if (error.name === 'DocumentNotFoundError') {
         return res.status(404).send({ message: 'Oh no!' });
       }
       return res.status(400).send({
@@ -67,7 +67,7 @@ const dislikeCard = (req, res) => {
     .then((card) => res.status(200).send({ card }))
     .catch((error) => {
       console.log(error.name);
-      if (error.name === 'CastError') {
+      if (error.name === 'DocumentNotFoundError') {
         return res.status(404).send({ message: 'Oh no!' });
       }
       return res.status(400).send({
