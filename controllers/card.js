@@ -9,11 +9,9 @@ const createCard = (req, res) => {
   const owner = req.user._id;
   Card.create({ name, link, owner })
     .then((card) => res.status(201).send(card))
-    .catch(() =>
-      res.status(400).send({
-        message: `An error occurred when creating a new card for user ${owner}`,
-      })
-    );
+    .catch(() => res.status(400).send({
+      message: `An error occurred when creating a new card for user ${owner}`,
+    }));
 };
 
 const deleteCard = (req, res) => {
@@ -23,23 +21,19 @@ const deleteCard = (req, res) => {
     .then((card) => {
       const owner = card.owner.toString();
 
-      if (req.user._id === owner) {
+      if (owner.equals(req.user.id)) {
         Card.deleteOne(card)
           .orFail()
           .then(() => res.status(200).send(card))
-          .catch(() =>
-            res.status(400).send({
-              message: `An error occurred when deleting card ${cardId}`,
-            })
-          );
+          .catch(() => res.status(400).send({
+            message: `An error occurred when deleting card ${cardId}`,
+          }));
       }
       return res.status(403).send({
         message: `An error occurred deleting card: ${cardId}. It is not owned by ${req.user._id}. The real owner is ${owner}`,
       });
     })
-    .catch(() =>
-      res.status(404).send({ message: `Card with id ${cardId} not found` })
-    );
+    .catch(() => res.status(404).send({ message: `Card with id ${cardId} not found` }));
 };
 
 const likeCard = (req, res) => {
@@ -47,7 +41,7 @@ const likeCard = (req, res) => {
   Card.findByIdAndUpdate(
     cardId,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
-    { new: true, runValidators: true }
+    { new: true, runValidators: true },
   )
     .orFail()
     .then((card) => res.status(200).send({ card }))
@@ -67,7 +61,7 @@ const dislikeCard = (req, res) => {
   Card.findByIdAndUpdate(
     cardId,
     { $pull: { likes: req.user._id } }, // убрать _id из массива
-    { new: true, runValidators: true }
+    { new: true, runValidators: true },
   )
     .orFail()
     .then((card) => res.status(200).send({ card }))
