@@ -21,19 +21,23 @@ const deleteCard = (req, res) => {
     .then((card) => {
       const owner = card.owner.toString();
 
-      if (owner.equals(req.user.id)) {
+      if (owner === req.user._id) {
         Card.deleteOne(card)
-          .orFail()
           .then(() => res.status(200).send(card))
-          .catch(() => res.status(400).send({
-            message: `An error occurred when deleting card ${cardId}`,
-          }));
+          .catch((error) => {
+            console.log(error);
+            return res.status(400).send({
+              message: `An error occurred when deleting card ${cardId}`,
+            });
+          });
+      } else {
+        res.status(403).send({
+          message: `An error occurred deleting card: ${cardId}. It is not owned by ${req.user._id}. The real owner is ${owner}`,
+        });
       }
-      return res.status(403).send({
-        message: `An error occurred deleting card: ${cardId}. It is not owned by ${req.user._id}. The real owner is ${owner}`,
-      });
     })
     .catch((error) => {
+      console.log(error);
       if (error.name === 'CastError') {
         return res.status(400).send({ message: 'oh no!' });
       }
