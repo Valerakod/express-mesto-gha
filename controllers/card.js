@@ -1,10 +1,7 @@
 const Card = require('../models/card');
 
 const getCards = (req, res) => {
-  Card.find({})
-    .orFail()
-    .then((cards) => res.status(200).send(cards))
-    .catch(() => res.status(400).send({ message: 'No cards found' }));
+  Card.find({}).then((cards) => res.status(200).send(cards));
 };
 
 const createCard = (req, res) => {
@@ -32,11 +29,11 @@ const deleteCard = (req, res) => {
             message: `An error occurred when deleting card ${cardId}`,
           }));
       }
-      res.status(403).send({
+      return res.status(403).send({
         message: `An error occurred deleting card: ${cardId}. It is not owned by ${req.user._id}`,
       });
     })
-    .catch(() => res.status(404).send({ message: `Card with id ${cardId} not found` }));
+    .catch(() => res.status(400).send({ message: `Card with id ${cardId} not found` }));
 };
 
 const likeCard = (req, res) => {
@@ -48,9 +45,15 @@ const likeCard = (req, res) => {
   )
     .orFail()
     .then((card) => res.status(200).send({ card }))
-    .catch(() => res.status(400).send({
-      message: `An error occurred when adding a like to card: ${cardId}`,
-    }));
+    .catch((error) => {
+      console.log(error.name);
+      if (error.name === 'CastError') {
+        return res.status(404).send({ message: 'Oh no!' });
+      }
+      return res.status(400).send({
+        message: `An error occurred when adding a like to card: ${cardId}`,
+      });
+    });
 };
 
 const dislikeCard = (req, res) => {
@@ -62,9 +65,15 @@ const dislikeCard = (req, res) => {
   )
     .orFail()
     .then((card) => res.status(200).send({ card }))
-    .catch(() => res.status(400).send({
-      message: `An error occurred when deleting a like to card: ${cardId}`,
-    }));
+    .catch((error) => {
+      console.log(error.name);
+      if (error.name === 'CastError') {
+        return res.status(404).send({ message: 'Oh no!' });
+      }
+      return res.status(400).send({
+        message: `An error occurred when deleting a like to card: ${cardId}`,
+      });
+    });
 };
 
 module.exports = {
