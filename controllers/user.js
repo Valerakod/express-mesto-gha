@@ -26,7 +26,6 @@ const createNewUser = (req, res) => {
   const { name, about, avatar } = req.body;
 
   User.create({ name, about, avatar })
-    .orFail()
     .then((user) => res.status(200).send({ user }))
     .catch(() =>
       res
@@ -38,7 +37,11 @@ const createNewUser = (req, res) => {
 const editUserInfo = (req, res) => {
   const { name, about } = req.body;
   const id = req.user._id;
-  User.findByIdAndUpdate(id, { name, about }, { upsert: true })
+  User.findByIdAndUpdate(
+    id,
+    { name, about },
+    { upsert: true, runValidators: true }
+  )
     .orFail()
     .then((user) => res.status(200).send({ user }))
     .catch(() =>
@@ -49,7 +52,7 @@ const editUserInfo = (req, res) => {
 const editAvatar = (req, res) => {
   const { avatar } = req.body;
   const id = req.user._id;
-  User.findByIdAndUpdate(id, { avatar }, { upsert: true })
+  User.findByIdAndUpdate(id, { avatar }, { upsert: true, runValidators: true })
     .orFail()
     .then((user) => res.status(200).send({ user }))
     .catch(() =>
