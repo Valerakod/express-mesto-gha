@@ -33,7 +33,14 @@ const deleteCard = (req, res) => {
         message: `An error occurred deleting card: ${cardId}. It is not owned by ${req.user._id}. The real owner is ${owner}`,
       });
     })
-    .catch(() => res.status(404).send({ message: `Card with id ${cardId} not found` }));
+    .catch((error) => {
+      if (error.name === 'CastError') {
+        return res.status(400).send({ message: 'oh no!' });
+      }
+      return res
+        .status(404)
+        .send({ message: `Card with id ${cardId} not found` });
+    });
 };
 
 const likeCard = (req, res) => {
