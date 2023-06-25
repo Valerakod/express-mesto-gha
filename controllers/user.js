@@ -34,9 +34,16 @@ const createNewUser = (req, res) => {
 
   User.create({ name, about, avatar })
     .then((user) => res.status(constants.HTTP_STATUS_OK).send({ user }))
-    .catch(() => res
-      .status(constants.HTTP_STATUS_BAD_REQUEST)
-      .send({ message: 'An error occurred when creating a new user' }));
+    .catch((error) => {
+      if (error.name === 'ValidationError') {
+        return res
+          .status(constants.HTTP_STATUS_BAD_REQUEST)
+          .send({ message: 'Validation error' });
+      }
+      return res
+        .status(constants.HTTP_STATUS_BAD_REQUEST)
+        .send({ message: 'An error occurred when creating a new user' });
+    });
 };
 
 const editUserInfo = (req, res) => {
@@ -49,9 +56,21 @@ const editUserInfo = (req, res) => {
   )
     .orFail()
     .then((user) => res.status(constants.HTTP_STATUS_OK).send({ user }))
-    .catch(() => res
-      .status(constants.HTTP_STATUS_BAD_REQUEST)
-      .send({ message: `User with id: ${id} was not updated` }));
+    .catch((error) => {
+      if (error.name === 'ValidationError') {
+        return res
+          .status(constants.HTTP_STATUS_BAD_REQUEST)
+          .send({ message: 'Validation error' });
+      }
+      if (error.name === 'CastError') {
+        return res
+          .status(constants.HTTP_STATUS_BAD_REQUEST)
+          .send({ message: 'User id is not correct' });
+      }
+      return res
+        .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+        .send({ message: 'Server error' });
+    });
 };
 
 const editAvatar = (req, res) => {
@@ -60,9 +79,27 @@ const editAvatar = (req, res) => {
   User.findByIdAndUpdate(id, { avatar }, { new: true, runValidators: true })
     .orFail()
     .then((user) => res.status(constants.HTTP_STATUS_OK).send({ user }))
-    .catch(() => res
-      .status(constants.HTTP_STATUS_BAD_REQUEST)
-      .send({ message: `Avatar for user with id: ${id} was not updated` }));
+    .catch((error) => {
+      if (error.name === 'ValidationError') {
+        return res
+          .status(constants.HTTP_STATUS_BAD_REQUEST)
+          .send({ message: 'Validation error' });
+      }
+      if (error.name === 'CastError') {
+        return res
+          .status(constants.HTTP_STATUS_BAD_REQUEST)
+          .send({ message: 'User id is not correct' });
+      }
+      if (error.name === 'DocumentNotFoundError') {
+        return res
+          .status(constants.HTTP_STATUS_BAD_REQUEST)
+          .send({ message: `User with id: ${id} was not found` });
+      }
+
+      return res
+        .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+        .send({ message: 'Server error' });
+    });
 };
 
 module.exports = {

@@ -2,7 +2,11 @@ const { constants } = require('node:http2');
 const Card = require('../models/card');
 
 const getCards = (req, res) => {
-  Card.find({}).then((cards) => res.status(constants.HTTP_STATUS_OK).send(cards));
+  Card.find({})
+    .then((cards) => res.status(constants.HTTP_STATUS_OK).send(cards))
+    .catch(() => res
+      .status(constants.HTTP_STATUS_BAD_REQUEST)
+      .send({ message: 'No cards found' }));
 };
 
 const createCard = (req, res) => {
@@ -10,9 +14,22 @@ const createCard = (req, res) => {
   const owner = req.user._id;
   Card.create({ name, link, owner })
     .then((card) => res.status(constants.HTTP_STATUS_CREATED).send(card))
-    .catch(() => res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-      message: `An error occurred when creating a new card for user ${owner}`,
-    }));
+    .catch((error) => {
+      if (error.name === 'CastError') {
+        return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
+          message: `An error occurred when creating a new card for user ${owner}`,
+        });
+      }
+
+      if (error.name === 'ValidationError') {
+        return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
+          message: 'Validation error',
+        });
+      }
+      return res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+        message: 'Server error',
+      });
+    });
 };
 
 const deleteCard = (req, res) => {
