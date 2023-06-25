@@ -1,4 +1,5 @@
 const { constants } = require('node:http2');
+const { Error } = require('mongoose');
 const Card = require('../models/card');
 
 const getCards = (req, res) => {
@@ -15,13 +16,13 @@ const createCard = (req, res) => {
   Card.create({ name, link, owner })
     .then((card) => res.status(constants.HTTP_STATUS_CREATED).send(card))
     .catch((error) => {
-      if (error.name === 'CastError') {
+      if (error instanceof Error.CastError) {
         return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
           message: `An error occurred when creating a new card for user ${owner}`,
         });
       }
 
-      if (error.name === 'ValidationError') {
+      if (error instanceof Error.ValidationError) {
         return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
           message: 'Validation error',
         });
@@ -56,7 +57,7 @@ const deleteCard = (req, res) => {
     })
     .catch((error) => {
       console.log(error);
-      if (error.name === 'CastError') {
+      if (error instanceof Error.CastError) {
         return res
           .status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'oh no!' });
@@ -78,7 +79,7 @@ const likeCard = (req, res) => {
     .then((card) => res.status(constants.HTTP_STATUS_OK).send({ card }))
     .catch((error) => {
       console.log(error.name);
-      if (error.name === 'DocumentNotFoundError') {
+      if (error instanceof Error.DocumentNotFoundError) {
         return res
           .status(constants.HTTP_STATUS_NOT_FOUND)
           .send({ message: 'Oh no!' });
@@ -100,7 +101,7 @@ const dislikeCard = (req, res) => {
     .then((card) => res.status(constants.HTTP_STATUS_OK).send({ card }))
     .catch((error) => {
       console.log(error.name);
-      if (error.name === 'DocumentNotFoundError') {
+      if (error instanceof Error.DocumentNotFoundError) {
         return res
           .status(constants.HTTP_STATUS_NOT_FOUND)
           .send({ message: 'Oh no!' });

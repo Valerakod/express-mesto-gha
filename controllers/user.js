@@ -17,7 +17,7 @@ const getUserById = (req, res) => {
     .then((user) => res.status(constants.HTTP_STATUS_OK).send({ user }))
     .catch((error) => {
       console.log(error.name);
-      if (error.name === 'CastError') {
+      if (error instanceof Error.CastError) {
         return res
           .status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'oh no!' });
@@ -35,7 +35,7 @@ const createNewUser = (req, res) => {
   User.create({ name, about, avatar })
     .then((user) => res.status(constants.HTTP_STATUS_OK).send({ user }))
     .catch((error) => {
-      if (error.name === 'ValidationError') {
+      if (error instanceof Error.ValidationError) {
         return res
           .status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'Validation error' });
@@ -57,12 +57,12 @@ const editUserInfo = (req, res) => {
     .orFail()
     .then((user) => res.status(constants.HTTP_STATUS_OK).send({ user }))
     .catch((error) => {
-      if (error.name === 'ValidationError') {
+      if (error instanceof Error.ValidationError) {
         return res
           .status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'Validation error' });
       }
-      if (error.name === 'CastError') {
+      if (error instanceof Error.CastError) {
         return res
           .status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'User id is not correct' });
@@ -80,17 +80,17 @@ const editAvatar = (req, res) => {
     .orFail()
     .then((user) => res.status(constants.HTTP_STATUS_OK).send({ user }))
     .catch((error) => {
-      if (error.name === 'ValidationError') {
+      if (error instanceof Error.ValidationError) {
         return res
           .status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'Validation error' });
       }
-      if (error.name === 'CastError') {
+      if (error instanceof Error.CastError) {
         return res
           .status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'User id is not correct' });
       }
-      if (error.name === 'DocumentNotFoundError') {
+      if (error instanceof Error.DocumentNotFoundError) {
         return res
           .status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: `User with id: ${id} was not found` });
