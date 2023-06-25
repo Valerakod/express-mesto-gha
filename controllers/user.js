@@ -1,4 +1,5 @@
 const { constants } = require('node:http2');
+const { Error } = require('mongoose');
 const User = require('../models/user');
 
 const getAllUsers = (req, res) => {
