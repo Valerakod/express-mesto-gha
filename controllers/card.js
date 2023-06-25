@@ -52,7 +52,7 @@ const likeCard = (req, res) => {
   Card.findByIdAndUpdate(
     cardId,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
-    { new: true, runValidators: true },
+    { new: true },
   )
     .orFail()
     .then((card) => res.status(200).send({ card }))
@@ -72,7 +72,7 @@ const dislikeCard = (req, res) => {
   Card.findByIdAndUpdate(
     cardId,
     { $pull: { likes: req.user._id } }, // убрать _id из массива
-    { new: true, runValidators: true },
+    { new: true },
   )
     .orFail()
     .then((card) => res.status(200).send({ card }))

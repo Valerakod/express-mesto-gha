@@ -3,12 +3,7 @@ const User = require('../models/user');
 const getAllUsers = (req, res) => {
   User.find({})
     .orFail()
-    .then((users) => {
-      if (users && users.length > 0) {
-        return res.send({ users });
-      }
-      return res.status(500).send({ message: 'No users found' });
-    })
+    .then((users) => res.send({ users }))
     .catch(() => res.status(400).send({ message: 'No users found' }));
 };
 
