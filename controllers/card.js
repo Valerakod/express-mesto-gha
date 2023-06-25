@@ -1,15 +1,16 @@
+const { constants } = require('node:http2');
 const Card = require('../models/card');
 
 const getCards = (req, res) => {
-  Card.find({}).then((cards) => res.status(200).send(cards));
+  Card.find({}).then((cards) => res.status(constants.HTTP_STATUS_OK).send(cards));
 };
 
 const createCard = (req, res) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({ name, link, owner })
-    .then((card) => res.status(201).send(card))
-    .catch(() => res.status(400).send({
+    .then((card) => res.status(constants.HTTP_STATUS_CREATED).send(card))
+    .catch(() => res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
       message: `An error occurred when creating a new card for user ${owner}`,
     }));
 };
@@ -23,15 +24,15 @@ const deleteCard = (req, res) => {
 
       if (owner === req.user._id) {
         Card.deleteOne(card)
-          .then(() => res.status(200).send(card))
+          .then(() => res.status(constants.HTTP_STATUS_OK).send(card))
           .catch((error) => {
             console.log(error);
-            return res.status(400).send({
+            return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
               message: `An error occurred when deleting card ${cardId}`,
             });
           });
       } else {
-        res.status(403).send({
+        res.status(constants.HTTP_STATUS_FORBIDDEN).send({
           message: `An error occurred deleting card: ${cardId}. It is not owned by ${req.user._id}. The real owner is ${owner}`,
         });
       }
@@ -39,10 +40,12 @@ const deleteCard = (req, res) => {
     .catch((error) => {
       console.log(error);
       if (error.name === 'CastError') {
-        return res.status(400).send({ message: 'oh no!' });
+        return res
+          .status(constants.HTTP_STATUS_BAD_REQUEST)
+          .send({ message: 'oh no!' });
       }
       return res
-        .status(404)
+        .status(constants.HTTP_STATUS_NOT_FOUND)
         .send({ message: `Card with id ${cardId} not found` });
     });
 };
@@ -55,13 +58,15 @@ const likeCard = (req, res) => {
     { new: true },
   )
     .orFail()
-    .then((card) => res.status(200).send({ card }))
+    .then((card) => res.status(constants.HTTP_STATUS_OK).send({ card }))
     .catch((error) => {
       console.log(error.name);
       if (error.name === 'DocumentNotFoundError') {
-        return res.status(404).send({ message: 'Oh no!' });
+        return res
+          .status(constants.HTTP_STATUS_NOT_FOUND)
+          .send({ message: 'Oh no!' });
       }
-      return res.status(400).send({
+      return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
         message: `An error occurred when adding a like to card: ${cardId}`,
       });
     });
@@ -75,13 +80,15 @@ const dislikeCard = (req, res) => {
     { new: true },
   )
     .orFail()
-    .then((card) => res.status(200).send({ card }))
+    .then((card) => res.status(constants.HTTP_STATUS_OK).send({ card }))
     .catch((error) => {
       console.log(error.name);
       if (error.name === 'DocumentNotFoundError') {
-        return res.status(404).send({ message: 'Oh no!' });
+        return res
+          .status(constants.HTTP_STATUS_NOT_FOUND)
+          .send({ message: 'Oh no!' });
       }
-      return res.status(400).send({
+      return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
         message: `An error occurred when deleting a like to card: ${cardId}`,
       });
     });

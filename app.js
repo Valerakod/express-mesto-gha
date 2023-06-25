@@ -1,3 +1,4 @@
+const { constants } = require('node:http2');
 const express = require('express');
 const mongoose = require('mongoose');
 
@@ -24,7 +25,9 @@ app.use((req, res, next) => {
 app.use(userRoutes);
 app.use(cardRoutes);
 app.all('*', (req, res) => {
-  res.status(404).send({ message: 'Route not found' });
+  res
+    .status(constants.HTTP_STATUS_NOT_FOUND)
+    .send({ message: 'Route not found' });
 });
 
 app.listen(PORT);
