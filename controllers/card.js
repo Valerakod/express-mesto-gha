@@ -16,12 +16,6 @@ const createCard = (req, res) => {
   Card.create({ name, link, owner })
     .then((card) => res.status(constants.HTTP_STATUS_CREATED).send(card))
     .catch((error) => {
-      if (error instanceof Error.CastError) {
-        return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-          message: `An error occurred when creating a new card for user ${owner}`,
-        });
-      }
-
       if (error instanceof Error.ValidationError) {
         return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
           message: 'Validation error',
@@ -62,9 +56,14 @@ const deleteCard = (req, res) => {
           .status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'oh no!' });
       }
+      if (error instanceof Error.DocumentNotFoundError) {
+        return res
+          .status(constants.HTTP_STATUS_NOT_FOUND)
+          .send({ message: `Card with id ${cardId} not found` });
+      }
       return res
-        .status(constants.HTTP_STATUS_NOT_FOUND)
-        .send({ message: `Card with id ${cardId} not found` });
+        .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+        .send({ message: 'Server error' });
     });
 };
 
@@ -79,6 +78,11 @@ const likeCard = (req, res) => {
     .then((card) => res.status(constants.HTTP_STATUS_OK).send({ card }))
     .catch((error) => {
       console.log(error.name);
+      if (error instanceof Error.CastError) {
+        return res
+          .status(constants.HTTP_STATUS_BAD_REQUEST)
+          .send({ message: 'oh no!' });
+      }
       if (error instanceof Error.DocumentNotFoundError) {
         return res
           .status(constants.HTTP_STATUS_NOT_FOUND)
@@ -101,6 +105,11 @@ const dislikeCard = (req, res) => {
     .then((card) => res.status(constants.HTTP_STATUS_OK).send({ card }))
     .catch((error) => {
       console.log(error.name);
+      if (error instanceof Error.CastError) {
+        return res
+          .status(constants.HTTP_STATUS_BAD_REQUEST)
+          .send({ message: 'oh no!' });
+      }
       if (error instanceof Error.DocumentNotFoundError) {
         return res
           .status(constants.HTTP_STATUS_NOT_FOUND)

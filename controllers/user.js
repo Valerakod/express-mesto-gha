@@ -17,16 +17,19 @@ const getUserById = (req, res) => {
     .orFail()
     .then((user) => res.status(constants.HTTP_STATUS_OK).send({ user }))
     .catch((error) => {
-      console.log(error.name);
       if (error instanceof Error.CastError) {
         return res
           .status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'oh no!' });
       }
-
+      if (error instanceof Error.DocumentNotFoundError) {
+        return res
+          .status(constants.HTTP_STATUS_NOT_FOUND)
+          .send({ message: `User with id: ${id} was not found ` });
+      }
       return res
-        .status(constants.HTTP_STATUS_NOT_FOUND)
-        .send({ message: `User with id: ${id} was not found ` });
+        .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+        .send({ message: 'Server error' });
     });
 };
 
@@ -63,11 +66,6 @@ const editUserInfo = (req, res) => {
           .status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'Validation error' });
       }
-      if (error instanceof Error.CastError) {
-        return res
-          .status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'User id is not correct' });
-      }
       return res
         .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
         .send({ message: 'Server error' });
@@ -85,11 +83,6 @@ const editAvatar = (req, res) => {
         return res
           .status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'Validation error' });
-      }
-      if (error instanceof Error.CastError) {
-        return res
-          .status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'User id is not correct' });
       }
       if (error instanceof Error.DocumentNotFoundError) {
         return res
