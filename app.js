@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const NotFoundError = require('./errors/NotFoundError');
+const auth = require('./middlewares/auth');
 
 const userRoutes = require('./routes/user');
 const cardRoutes = require('./routes/card');
@@ -17,6 +18,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb').then(() => {
 
 app.use(userRoutes);
 app.use(cardRoutes);
+app.use(auth);
 app.all('*', (req, res, next) => {
   next(new NotFoundError('Route not found'));
 });
