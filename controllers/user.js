@@ -1,56 +1,79 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const { constants } = require('node:http2');
 const { Error } = require('mongoose');
 const User = require('../models/user');
+const BadRequestError = require('../errors/BadRequestError');
+const ServerError = require('../errors/ServerError');
+const AuthentificationError = require('../errors/AuthentificationError');
+const EmailError = require('../errors/EmailError');
+const NotFoundError = require('../errors/NotFoundError');
 
-const getAllUsers = (req, res) => {
-  User.find({})
-    .orFail()
-    .then((users) => res.send({ users }))
-    .catch(() => res
-      .status(constants.HTTP_STATUS_BAD_REQUEST)
-      .send({ message: 'No users found' }));
+const login = (req, res, next) => {
+  const { email, password } = req.body;
+
+  User.findOne({ email })
+    .select('+password')
+    .then((user) => {
+      if (!user) {
+        next(new AuthentificationError('Email or password is not correct'));
+      }
+
+      return bcrypt.compare(password, user.password).then((matched) => {
+        if (!matched) {
+          next(new AuthentificationError('Email or password is not correct'));
+        }
+        return res.send({
+          token: jwt.sign({ _id: user._id }, 'some-secret-key', {
+            expiresIn: '7d',
+          }),
+        });
+      });
+    })
+    .catch(next);
 };
 
-const getUserById = (req, res) => {
+const getAllUsers = (req, res, next) => {
+  User.find({})
+    .then((users) => res.send({ users }))
+    .catch(() => next(new BadRequestError('No users found')));
+};
+
+const getUserById = (req, res, next) => {
   const id = req.params.userId ? req.params.userId : req.user._id;
   User.findById(id)
     .orFail()
     .then((user) => res.status(constants.HTTP_STATUS_OK).send({ user }))
     .catch((error) => {
       if (error instanceof Error.CastError) {
-        return res
-          .status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'oh no!' });
+        next(new BadRequestError('oh no!'));
       }
       if (error instanceof Error.DocumentNotFoundError) {
-        return res
-          .status(constants.HTTP_STATUS_NOT_FOUND)
-          .send({ message: `User with id: ${id} was not found ` });
+        next(new BadRequestError(`User with id: ${id} was not found `));
       }
-      return res
-        .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-        .send({ message: 'Server error' });
+      next(new ServerError('Server error '));
     });
 };
 
-const createNewUser = (req, res) => {
+const createNewUser = (req, res, next) => {
   const { name, about, avatar } = req.body;
 
   User.create({ name, about, avatar })
     .then((user) => res.status(constants.HTTP_STATUS_OK).send({ user }))
     .catch((error) => {
       if (error instanceof Error.ValidationError) {
-        return res
-          .status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'Validation error' });
+        next(new BadRequestError('Validation error'));
       }
-      return res
-        .status(constants.HTTP_STATUS_BAD_REQUEST)
-        .send({ message: 'An error occurred when creating a new user' });
+      next(new BadRequestError('An error occurred when creating a new user'));
+    })
+    .catch((error) => {
+      if (error instanceof Error.MongoError) {
+        next(new EmailError('A User with this email address already exists'));
+      }
     });
 };
 
-const editUserInfo = (req, res) => {
+const editUserInfo = (req, res, next) => {
   const { name, about } = req.body;
   const id = req.user._id;
   User.findByIdAndUpdate(
@@ -62,17 +85,13 @@ const editUserInfo = (req, res) => {
     .then((user) => res.status(constants.HTTP_STATUS_OK).send({ user }))
     .catch((error) => {
       if (error instanceof Error.ValidationError) {
-        return res
-          .status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'Validation error' });
+        next(new BadRequestError('Validation error'));
       }
-      return res
-        .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-        .send({ message: 'Server error' });
+      next(new ServerError('Server error'));
     });
 };
 
-const editAvatar = (req, res) => {
+const editAvatar = (req, res, next) => {
   const { avatar } = req.body;
   const id = req.user._id;
   User.findByIdAndUpdate(id, { avatar }, { new: true, runValidators: true })
@@ -80,23 +99,17 @@ const editAvatar = (req, res) => {
     .then((user) => res.status(constants.HTTP_STATUS_OK).send({ user }))
     .catch((error) => {
       if (error instanceof Error.ValidationError) {
-        return res
-          .status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'Validation error' });
+        next(new BadRequestError('Validation error'));
       }
       if (error instanceof Error.DocumentNotFoundError) {
-        return res
-          .status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: `User with id: ${id} was not found` });
+        next(new NotFoundError(`User with id: ${id} was not found`));
       }
-
-      return res
-        .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-        .send({ message: 'Server error' });
+      next(new ServerError('Server error'));
     });
 };
 
 module.exports = {
+  login,
   getAllUsers,
   getUserById,
   createNewUser,

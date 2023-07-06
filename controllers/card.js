@@ -1,33 +1,31 @@
 const { constants } = require('node:http2');
 const { Error } = require('mongoose');
 const Card = require('../models/card');
+const BadRequestError = require('../errors/BadRequestError');
+const ServerError = require('../errors/ServerError');
+const AuthentificationError = require('../errors/AuthentificationError');
+const NotFoundError = require('../errors/NotFoundError');
 
-const getCards = (req, res) => {
+const getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.status(constants.HTTP_STATUS_OK).send(cards))
-    .catch(() => res
-      .status(constants.HTTP_STATUS_BAD_REQUEST)
-      .send({ message: 'No cards found' }));
+    .catch(() => next(new BadRequestError('No cards foun')));
 };
 
-const createCard = (req, res) => {
+const createCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({ name, link, owner })
     .then((card) => res.status(constants.HTTP_STATUS_CREATED).send(card))
     .catch((error) => {
       if (error instanceof Error.ValidationError) {
-        return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-          message: 'Validation error',
-        });
+        next(new BadRequestError('Validation error'));
       }
-      return res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
-        message: 'Server error',
-      });
+      next(new ServerError('Server error '));
     });
 };
 
-const deleteCard = (req, res) => {
+const deleteCard = (req, res, next) => {
   const { cardId } = req.params;
   Card.findById(cardId)
     .orFail()
@@ -39,35 +37,33 @@ const deleteCard = (req, res) => {
           .then(() => res.status(constants.HTTP_STATUS_OK).send(card))
           .catch((error) => {
             console.log(error);
-            return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-              message: `An error occurred when deleting card ${cardId}`,
-            });
+            next(
+              new BadRequestError(
+                `An error occurred when deleting card ${cardId}`,
+              ),
+            );
           });
       } else {
-        res.status(constants.HTTP_STATUS_FORBIDDEN).send({
-          message: `An error occurred deleting card: ${cardId}. It is not owned by ${req.user._id}. The real owner is ${owner}`,
-        });
+        next(
+          new AuthentificationError(
+            `An error occurred deleting card: ${cardId}. It is not owned by ${req.user._id}. The real owner is ${owner}`,
+          ),
+        );
       }
     })
     .catch((error) => {
       console.log(error);
       if (error instanceof Error.CastError) {
-        return res
-          .status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'oh no!' });
+        next(new BadRequestError('oh no!'));
       }
       if (error instanceof Error.DocumentNotFoundError) {
-        return res
-          .status(constants.HTTP_STATUS_NOT_FOUND)
-          .send({ message: `Card with id ${cardId} not found` });
+        next(new NotFoundError(`Card with id ${cardId} not found`));
       }
-      return res
-        .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-        .send({ message: 'Server error' });
+      next(new ServerError('Server error '));
     });
 };
 
-const likeCard = (req, res) => {
+const likeCard = (req, res, next) => {
   const { cardId } = req.params;
   Card.findByIdAndUpdate(
     cardId,
@@ -79,22 +75,20 @@ const likeCard = (req, res) => {
     .catch((error) => {
       console.log(error.name);
       if (error instanceof Error.CastError) {
-        return res
-          .status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'oh no!' });
+        next(new BadRequestError('oh no!'));
       }
       if (error instanceof Error.DocumentNotFoundError) {
-        return res
-          .status(constants.HTTP_STATUS_NOT_FOUND)
-          .send({ message: 'Oh no!' });
+        next(new NotFoundError('oh no!'));
       }
-      return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-        message: `An error occurred when adding a like to card: ${cardId}`,
-      });
+      next(
+        new BadRequestError(
+          `An error occurred when adding a like to card: ${cardId}`,
+        ),
+      );
     });
 };
 
-const dislikeCard = (req, res) => {
+const dislikeCard = (req, res, next) => {
   const { cardId } = req.params;
   Card.findByIdAndUpdate(
     cardId,
@@ -106,18 +100,16 @@ const dislikeCard = (req, res) => {
     .catch((error) => {
       console.log(error.name);
       if (error instanceof Error.CastError) {
-        return res
-          .status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'oh no!' });
+        next(new BadRequestError('oh no!'));
       }
       if (error instanceof Error.DocumentNotFoundError) {
-        return res
-          .status(constants.HTTP_STATUS_NOT_FOUND)
-          .send({ message: 'Oh no!' });
+        next(new NotFoundError('oh no!'));
       }
-      return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-        message: `An error occurred when deleting a like to card: ${cardId}`,
-      });
+      next(
+        new BadRequestError(
+          `An error occurred when deleting a like to card: ${cardId}`,
+        ),
+      );
     });
 };
 
