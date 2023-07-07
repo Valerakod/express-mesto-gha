@@ -14,7 +14,7 @@ router.get('/users', getAllUsers);
 router.get(
   '/users/:userId',
   celebrate({
-    [Segments.QUERY]: Joi.object.keys({
+    [Segments.QUERY]: Joi.object().keys({
       userId: Joi.string().length(24).hex().required(),
     }),
   }),
@@ -24,7 +24,7 @@ router.get('/users/me', getUserById);
 router.patch(
   '/users/me',
   celebrate({
-    [Segments.BODY]: Joi.object.keys({
+    [Segments.BODY]: Joi.object().keys({
       name: Joi.string().min(2).max(30),
       about: Joi.string().min(2).max(30),
     }),
@@ -34,7 +34,7 @@ router.patch(
 router.patch(
   '/users/me/avatar',
   celebrate({
-    [Segments.BODY]: Joi.object.keys({
+    [Segments.BODY]: Joi.object().keys({
       avatar: Joi.string()
         .required()
         .pattern(
