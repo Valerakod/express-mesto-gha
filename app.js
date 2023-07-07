@@ -1,7 +1,9 @@
 const express = require('express');
 const BodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const { celebrate, Joi, Segments } = require('celebrate');
+const {
+  celebrate, Joi, Segments, errors,
+} = require('celebrate');
 const NotFoundError = require('./errors/NotFoundError');
 const auth = require('./middlewares/auth');
 const errorHandler = require('./middlewares/error');
@@ -53,5 +55,7 @@ app.use(cardRoutes);
 app.all('*', (req, res, next) => {
   next(new NotFoundError('Route not found'));
 });
+
+app.use(errors());
 app.use(errorHandler);
 app.listen(PORT);
