@@ -56,9 +56,13 @@ const getUserById = (req, res, next) => {
 };
 
 const createNewUser = (req, res, next) => {
-  const { name, about, avatar } = req.body;
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
 
-  User.create({ name, about, avatar })
+  User.create({
+    name, about, avatar, email, password,
+  })
     .then((user) => res.status(constants.HTTP_STATUS_OK).send({ user }))
     .catch((error) => {
       if (error instanceof Error.ValidationError) {
