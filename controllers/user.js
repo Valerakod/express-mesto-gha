@@ -49,7 +49,7 @@ const getUserById = (req, res, next) => {
         next(new BadRequestError('oh no!'));
       }
       if (error instanceof Error.DocumentNotFoundError) {
-        next(new BadRequestError(`User with id: ${id} was not found `));
+        next(new NotFoundError(`User with id: ${id} was not found `));
       }
       next(new ServerError('Server error '));
     });
