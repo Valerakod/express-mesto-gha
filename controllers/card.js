@@ -3,7 +3,7 @@ const { Error } = require('mongoose');
 const Card = require('../models/card');
 const BadRequestError = require('../errors/BadRequestError');
 const ServerError = require('../errors/ServerError');
-const AuthentificationError = require('../errors/AuthentificationError');
+const AuthorizationError = require('../errors/AuthorizationError');
 const NotFoundError = require('../errors/NotFoundError');
 
 const getCards = (req, res, next) => {
@@ -44,7 +44,7 @@ const deleteCard = (req, res, next) => {
           });
       } else {
         next(
-          new AuthentificationError(
+          new AuthorizationError(
             `An error occurred deleting card: ${cardId}. It is not owned by ${req.user._id}. The real owner is ${owner}`,
           ),
         );
