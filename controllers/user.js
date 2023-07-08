@@ -6,7 +6,7 @@ const User = require('../models/user');
 const BadRequestError = require('../errors/BadRequestError');
 const ServerError = require('../errors/ServerError');
 const AuthentificationError = require('../errors/AuthentificationError');
-const EmailError = require('../errors/EmailError');
+const AlreadyExistsError = require('../errors/AlreadyExistsError');
 const NotFoundError = require('../errors/NotFoundError');
 
 const login = (req, res, next) => {
@@ -60,19 +60,30 @@ const createNewUser = (req, res, next) => {
     name, about, avatar, email, password,
   } = req.body;
 
-  User.create({
-    name, about, avatar, email, password,
-  })
-    .then((user) => res.status(constants.HTTP_STATUS_OK).send({ user }))
-    .catch((error) => {
-      if (error instanceof Error.ValidationError) {
-        next(new BadRequestError('Validation error'));
+  if (!email || !password) {
+    next(new BadRequestError('Email or password were not sent'));
+  }
+
+  bcrypt
+    .hash(req.body.password, 10)
+    .then((hash) => User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    }))
+    .then((user) => res.status(constants.HTTP_STATUS_CREATED).send({ user }))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(
+          new BadRequestError('Incorrect data was passed during user creation.'),
+        );
       }
-      next(new BadRequestError('An error occurred when creating a new user'));
-    })
-    .catch((error) => {
-      if (error instanceof Error.MongoError) {
-        next(new EmailError('A User with this email address already exists'));
+      if (err.code === 11000) {
+        next(new AlreadyExistsError('User with this email already exists'));
+      } else {
+        next(err);
       }
     });
 };
