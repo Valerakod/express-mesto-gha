@@ -11,6 +11,7 @@ const {
 
 router.use(express.json());
 router.get('/users', getAllUsers);
+router.get('/users/me', getUserById);
 router.get(
   '/users/:userId',
   celebrate({
@@ -20,7 +21,6 @@ router.get(
   }),
   getUserById,
 );
-router.get('/users/me', getUserById);
 router.patch(
   '/users/me',
   celebrate({

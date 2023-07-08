@@ -73,7 +73,6 @@ const createNewUser = (req, res, next) => {
       email,
       password: hash,
     }))
-    // .then((user) => res.status(constants.HTTP_STATUS_CREATED).send({ user }))
     .then((user) => res.status(constants.HTTP_STATUS_CREATED).send({
       name: user.name,
       about: user.about,
