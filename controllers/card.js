@@ -9,7 +9,7 @@ const NotFoundError = require('../errors/NotFoundError');
 const getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.status(constants.HTTP_STATUS_OK).send(cards))
-    .catch(next(new BadRequestError('No cards foun')));
+    .catch(next);
 };
 
 const createCard = (req, res, next) => {
