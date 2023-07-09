@@ -16,16 +16,12 @@ const login = (req, res, next) => {
     .select('+password')
     .then((user) => {
       if (!user) {
-        return next(
-          new AuthentificationError('Email or password is not correct')
-        );
+        next(new AuthentificationError('Email or password is not correct'));
       }
 
       return bcrypt.compare(password, user.password).then((matched) => {
         if (!matched) {
-          return next(
-            new AuthentificationError('Email or password is not correct')
-          );
+          next(new AuthentificationError('Email or password is not correct'));
         }
         return res.send({
           token: jwt.sign({ _id: user._id }, 'some-secret-key', {
@@ -40,7 +36,7 @@ const login = (req, res, next) => {
 const getAllUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ users }))
-    .catch(next(new BadRequestError('No users found')));
+    .catch(() => next(new BadRequestError('No users found')));
 };
 
 const getUserById = (req, res, next) => {
@@ -50,49 +46,50 @@ const getUserById = (req, res, next) => {
     .then((user) => res.status(constants.HTTP_STATUS_OK).send({ user }))
     .catch((error) => {
       if (error instanceof Error.CastError) {
-        return next(new BadRequestError('oh no!'));
+        next(new BadRequestError('oh no!'));
       }
       if (error instanceof Error.DocumentNotFoundError) {
-        return next(new NotFoundError(`User with id: ${id} was not found `));
+        next(new NotFoundError(`User with id: ${id} was not found `));
       }
-      return next(new ServerError('Server error '));
+      next(new ServerError('Server error '));
     });
 };
 
 const createNewUser = (req, res, next) => {
-  const { name, about, avatar, email, password } = req.body;
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+
+  if (!email || !password) {
+    next(new BadRequestError('Email or password were not sent'));
+  }
 
   bcrypt
-    .hash(password, 10)
-    .then((hash) =>
-      User.create({
-        name,
-        about,
-        avatar,
-        email,
-        password: hash,
-      })
-    )
-    .then((user) =>
-      res.status(constants.HTTP_STATUS_CREATED).send({
-        name: user.name,
-        about: user.about,
-        avatar: user.avatar,
-        email: user.email,
-      })
-    )
+    .hash(req.body.password, 10)
+    .then((hash) => User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    }))
+    .then((user) => res.status(constants.HTTP_STATUS_CREATED).send({
+      name: user.name,
+      about: user.about,
+      avatar: user.avatar,
+      email: user.email,
+    }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return next(
-          new BadRequestError('Incorrect data was passed during user creation.')
+        next(
+          new BadRequestError('Incorrect data was passed during user creation.'),
         );
       }
       if (err.code === 11000) {
-        return next(
-          new AlreadyExistsError('User with this email already exists')
-        );
+        next(new AlreadyExistsError('User with this email already exists'));
+      } else {
+        next(err);
       }
-      return next(err);
     });
 };
 
@@ -102,18 +99,15 @@ const editUserInfo = (req, res, next) => {
   User.findByIdAndUpdate(
     id,
     { name, about },
-    { new: true, runValidators: true }
+    { new: true, runValidators: true },
   )
     .orFail()
     .then((user) => res.status(constants.HTTP_STATUS_OK).send({ user }))
     .catch((error) => {
       if (error instanceof Error.ValidationError) {
-        return next(new BadRequestError('Validation error'));
+        next(new BadRequestError('Validation error'));
       }
-      if (error instanceof Error.DocumentNotFoundError) {
-        return next(new NotFoundError('User not found'));
-      }
-      return next(new ServerError('Server error'));
+      next(new ServerError('Server error'));
     });
 };
 
@@ -125,12 +119,12 @@ const editAvatar = (req, res, next) => {
     .then((user) => res.status(constants.HTTP_STATUS_OK).send({ user }))
     .catch((error) => {
       if (error instanceof Error.ValidationError) {
-        return next(new BadRequestError('Validation error'));
+        next(new BadRequestError('Validation error'));
       }
       if (error instanceof Error.DocumentNotFoundError) {
-        return next(new NotFoundError(`User with id: ${id} was not found`));
+        next(new NotFoundError(`User with id: ${id} was not found`));
       }
-      return next(new ServerError('Server error'));
+      next(new ServerError('Server error'));
     });
 };
 
