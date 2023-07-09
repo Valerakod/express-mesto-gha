@@ -17,14 +17,14 @@ const login = (req, res, next) => {
     .then((user) => {
       if (!user) {
         return next(
-          new AuthentificationError('Email or password is not correct'),
+          new AuthentificationError('Email or password is not correct')
         );
       }
 
       return bcrypt.compare(password, user.password).then((matched) => {
         if (!matched) {
           return next(
-            new AuthentificationError('Email or password is not correct'),
+            new AuthentificationError('Email or password is not correct')
           );
         }
         return res.send({
@@ -60,40 +60,40 @@ const getUserById = (req, res, next) => {
 };
 
 const createNewUser = (req, res, next) => {
-  const {
-    name, about, avatar, email, password,
-  } = req.body;
+  const { name, about, avatar, email, password } = req.body;
 
   bcrypt
     .hash(password, 10)
-    .then((hash) => User.create({
-      name,
-      about,
-      avatar,
-      email,
-      password: hash,
-    }))
-    .then((user) => res.status(constants.HTTP_STATUS_CREATED).send({
-      name: user.name,
-      about: user.about,
-      avatar: user.avatar,
-      email: user.email,
-    }))
+    .then((hash) =>
+      User.create({
+        name,
+        about,
+        avatar,
+        email,
+        password: hash,
+      })
+    )
+    .then((user) =>
+      res.status(constants.HTTP_STATUS_CREATED).send({
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+        email: user.email,
+      })
+    )
     .catch((err) => {
       if (err.name === 'ValidationError') {
         return next(
-          new BadRequestError('Incorrect data was passed during user creation.'),
+          new BadRequestError('Incorrect data was passed during user creation.')
         );
       }
       if (err.code === 11000) {
         return next(
-          new AlreadyExistsError('User with this email already exists'),
+          new AlreadyExistsError('User with this email already exists')
         );
       }
       return next(err);
     });
-
-  return next();
 };
 
 const editUserInfo = (req, res, next) => {
@@ -102,7 +102,7 @@ const editUserInfo = (req, res, next) => {
   User.findByIdAndUpdate(
     id,
     { name, about },
-    { new: true, runValidators: true },
+    { new: true, runValidators: true }
   )
     .orFail()
     .then((user) => res.status(constants.HTTP_STATUS_OK).send({ user }))
