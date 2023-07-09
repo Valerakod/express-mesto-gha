@@ -80,7 +80,7 @@ const likeCard = (req, res, next) => {
         next(new NotFoundError('oh no!'));
       }
       next(
-        new BadRequestError(
+        new ServerError(
           `An error occurred when adding a like to card: ${cardId}`,
         ),
       );
