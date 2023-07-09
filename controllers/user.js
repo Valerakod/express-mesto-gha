@@ -60,12 +60,8 @@ const createNewUser = (req, res, next) => {
     name, about, avatar, email, password,
   } = req.body;
 
-  if (!email || !password) {
-    next(new BadRequestError('Email or password were not sent'));
-  }
-
   bcrypt
-    .hash(req.body.password, 10)
+    .hash(password, 10)
     .then((hash) => User.create({
       name,
       about,
