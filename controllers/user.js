@@ -36,7 +36,7 @@ const login = (req, res, next) => {
 const getAllUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ users }))
-    .catch(() => next(new BadRequestError('No users found')));
+    .catch(next(new BadRequestError('No users found')));
 };
 
 const getUserById = (req, res, next) => {
