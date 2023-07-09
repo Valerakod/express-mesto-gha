@@ -8,8 +8,8 @@ const NotFoundError = require('../errors/NotFoundError');
 
 const getCards = (req, res, next) => {
   Card.find({})
-    .then((cards) => res.status(constants.HTTP_STATUS_OK).send(cards))
-    .catch(() => next(new BadRequestError('No cards foun')));
+    .then((cards) => res.send(cards))
+    .catch(next(new BadRequestError('No cards foun')));
 };
 
 const createCard = (req, res, next) => {
@@ -18,9 +18,9 @@ const createCard = (req, res, next) => {
     .then((card) => res.status(constants.HTTP_STATUS_CREATED).send(card))
     .catch((error) => {
       if (error instanceof Error.ValidationError) {
-        next(new BadRequestError('Validation error'));
+        return next(new BadRequestError('Validation error'));
       }
-      next(new ServerError('Server error '));
+      return next(new ServerError('Server error '));
     });
 };
 
@@ -36,30 +36,34 @@ const deleteCard = (req, res, next) => {
           .then(() => res.status(constants.HTTP_STATUS_OK).send(card))
           .catch((error) => {
             console.log(error);
-            next(
+            return next(
               new BadRequestError(
                 `An error occurred when deleting card ${cardId}`,
               ),
             );
           });
       } else {
-        next(
+        return next(
           new AuthorizationError(
             `An error occurred deleting card: ${cardId}. It is not owned by ${req.user._id}. The real owner is ${owner}`,
           ),
         );
       }
+
+      return next();
     })
     .catch((error) => {
       console.log(error);
       if (error instanceof Error.CastError) {
-        next(new BadRequestError('oh no!'));
+        return next(new BadRequestError('oh no!'));
       }
       if (error instanceof Error.DocumentNotFoundError) {
-        next(new NotFoundError(`Card with id ${cardId} not found`));
+        return next(new NotFoundError(`Card with id ${cardId} not found`));
       }
-      next(new ServerError('Server error '));
+      return next(new ServerError('Server error '));
     });
+
+  return next();
 };
 
 const likeCard = (req, res, next) => {
@@ -74,12 +78,12 @@ const likeCard = (req, res, next) => {
     .catch((error) => {
       console.log(error.name);
       if (error instanceof Error.CastError) {
-        next(new BadRequestError('oh no!'));
+        return next(new BadRequestError('oh no!'));
       }
       if (error instanceof Error.DocumentNotFoundError) {
-        next(new NotFoundError('oh no!'));
+        return next(new NotFoundError('oh no!'));
       }
-      next(
+      return next(
         new BadRequestError(
           `An error occurred when adding a like to card: ${cardId}`,
         ),
@@ -99,12 +103,12 @@ const dislikeCard = (req, res, next) => {
     .catch((error) => {
       console.log(error.name);
       if (error instanceof Error.CastError) {
-        next(new BadRequestError('oh no!'));
+        return next(new BadRequestError('oh no!'));
       }
       if (error instanceof Error.DocumentNotFoundError) {
-        next(new NotFoundError('oh no!'));
+        return next(new NotFoundError('oh no!'));
       }
-      next(
+      return next(
         new BadRequestError(
           `An error occurred when deleting a like to card: ${cardId}`,
         ),

@@ -26,7 +26,7 @@ app.post(
   celebrate({
     [Segments.BODY]: Joi.object().keys({
       email: Joi.string().required().email(),
-      password: Joi.string().required().min(8),
+      password: Joi.string().required(),
     }),
   }),
   login,
@@ -41,7 +41,7 @@ app.post(
         /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$/,
       ),
       email: Joi.string().required().email(),
-      password: Joi.string().required().min(8),
+      password: Joi.string().required(),
     }),
   }),
   createNewUser,
@@ -50,9 +50,7 @@ app.use(auth);
 app.use(userRoutes);
 app.use(cardRoutes);
 
-app.all('*', (req, res, next) => {
-  next(new NotFoundError('Route not found'));
-});
+app.all('*', (req, res, next) => next(new NotFoundError('Route not found')));
 
 app.use(errors());
 app.use(errorHandler);
