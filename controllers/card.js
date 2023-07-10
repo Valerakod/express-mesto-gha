@@ -2,7 +2,6 @@ const { constants } = require('node:http2');
 const { Error } = require('mongoose');
 const Card = require('../models/card');
 const BadRequestError = require('../errors/BadRequestError');
-const ServerError = require('../errors/ServerError');
 const AuthorizationError = require('../errors/AuthorizationError');
 const NotFoundError = require('../errors/NotFoundError');
 
@@ -19,8 +18,9 @@ const createCard = (req, res, next) => {
     .catch((error) => {
       if (error instanceof Error.ValidationError) {
         next(new BadRequestError('Validation error'));
+      } else {
+        next(error);
       }
-      next(new ServerError('Server error '));
     });
 };
 
@@ -57,8 +57,9 @@ const deleteCard = (req, res, next) => {
       }
       if (error instanceof Error.DocumentNotFoundError) {
         next(new NotFoundError(`Card with id ${cardId} not found`));
+      } else {
+        next(error);
       }
-      next(new ServerError('Server error '));
     });
 };
 
@@ -75,15 +76,14 @@ const likeCard = (req, res, next) => {
       console.log(error.name);
       if (error instanceof Error.CastError) {
         next(new BadRequestError('oh no!'));
+      } else {
+        next(error);
       }
       if (error instanceof Error.DocumentNotFoundError) {
         next(new NotFoundError('oh no!'));
+      } else {
+        next(error);
       }
-      next(
-        new ServerError(
-          `An error occurred when adding a like to card: ${cardId}`,
-        ),
-      );
     });
 };
 
@@ -100,9 +100,13 @@ const dislikeCard = (req, res, next) => {
       console.log(error.name);
       if (error instanceof Error.CastError) {
         next(new BadRequestError('oh no!'));
+      } else {
+        next(error);
       }
       if (error instanceof Error.DocumentNotFoundError) {
         next(new NotFoundError('oh no!'));
+      } else {
+        next(error);
       }
       next(
         new BadRequestError(
