@@ -54,8 +54,7 @@ const deleteCard = (req, res, next) => {
       console.log(error);
       if (error instanceof Error.CastError) {
         next(new BadRequestError('oh no!'));
-      }
-      if (error instanceof Error.DocumentNotFoundError) {
+      } else if (error instanceof Error.DocumentNotFoundError) {
         next(new NotFoundError(`Card with id ${cardId} not found`));
       } else {
         next(error);
@@ -76,10 +75,7 @@ const likeCard = (req, res, next) => {
       console.log(error.name);
       if (error instanceof Error.CastError) {
         next(new BadRequestError('oh no!'));
-      } else {
-        next(error);
-      }
-      if (error instanceof Error.DocumentNotFoundError) {
+      } else if (error instanceof Error.DocumentNotFoundError) {
         next(new NotFoundError('oh no!'));
       } else {
         next(error);
@@ -100,19 +96,15 @@ const dislikeCard = (req, res, next) => {
       console.log(error.name);
       if (error instanceof Error.CastError) {
         next(new BadRequestError('oh no!'));
-      } else {
-        next(error);
-      }
-      if (error instanceof Error.DocumentNotFoundError) {
+      } else if (error instanceof Error.DocumentNotFoundError) {
         next(new NotFoundError('oh no!'));
       } else {
-        next(error);
+        next(
+          new BadRequestError(
+            `An error occurred when deleting a like to card: ${cardId}`,
+          ),
+        );
       }
-      next(
-        new BadRequestError(
-          `An error occurred when deleting a like to card: ${cardId}`,
-        ),
-      );
     });
 };
 
