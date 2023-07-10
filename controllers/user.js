@@ -4,7 +4,6 @@ const { constants } = require('node:http2');
 const { Error } = require('mongoose');
 const User = require('../models/user');
 const BadRequestError = require('../errors/BadRequestError');
-const ServerError = require('../errors/ServerError');
 const AuthentificationError = require('../errors/AuthentificationError');
 const AlreadyExistsError = require('../errors/AlreadyExistsError');
 const NotFoundError = require('../errors/NotFoundError');
@@ -47,11 +46,11 @@ const getUserById = (req, res, next) => {
     .catch((error) => {
       if (error instanceof Error.CastError) {
         next(new BadRequestError('oh no!'));
-      }
-      if (error instanceof Error.DocumentNotFoundError) {
+      } else if (error instanceof Error.DocumentNotFoundError) {
         next(new NotFoundError(`User with id: ${id} was not found `));
+      } else {
+        next(error);
       }
-      next(new ServerError('Server error '));
     });
 };
 
@@ -102,8 +101,7 @@ const editUserInfo = (req, res, next) => {
     .catch((error) => {
       if (error instanceof Error.ValidationError) {
         next(new BadRequestError('Validation error'));
-      }
-      next(new ServerError('Server error'));
+      } else next(error);
     });
 };
 
@@ -116,11 +114,9 @@ const editAvatar = (req, res, next) => {
     .catch((error) => {
       if (error instanceof Error.ValidationError) {
         next(new BadRequestError('Validation error'));
-      }
-      if (error instanceof Error.DocumentNotFoundError) {
+      } else if (error instanceof Error.DocumentNotFoundError) {
         next(new NotFoundError(`User with id: ${id} was not found`));
-      }
-      next(new ServerError('Server error'));
+      } else next(error);
     });
 };
 
